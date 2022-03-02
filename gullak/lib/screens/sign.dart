@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gullak/components/buttons.dart';
+import 'package:gullak/external/network/api.dart';
 import 'package:gullak/screens/otp.dart';
 import 'package:gullak/screens/terms.dart';
 
@@ -53,7 +56,7 @@ class _SignState extends State<Sign> {
                   }),
               const Expanded(
                   child:
-                      Text("I have read and approve the terms and conditions")),
+                  Text("I have read and approve the terms and conditions")),
               IconButton(
                   onPressed: () {
                     Navigator.push(
@@ -80,11 +83,17 @@ class _SignState extends State<Sign> {
             children: [
               Text(
                 "Let's do this",
-                style: Theme.of(context).textTheme.displaySmall,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .displaySmall,
               ),
               Text(
                 "this only takes a minute",
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .headline6,
               ),
               Padding(
                   padding: const EdgeInsets.only(top: 20.0),
@@ -93,28 +102,34 @@ class _SignState extends State<Sign> {
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         "+91",
-                        style: Theme.of(context).textTheme.headline5,
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .headline5,
                       ),
                     ),
                     Expanded(
                         child: Form(
-                      key: _mobileNumberRef,
-                      child: TextFormField(
-                        controller: mobileController,
-                        autofocus: false,
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: mobileNumberInputFormatters,
-                        style: Theme.of(context).textTheme.headline5,
-                        validator: (value) {
-                          if ((value?.length ?? 0) < 10) {
-                            return "Mobile number should be 10 digits";
-                          }
-                        },
-                        decoration: const InputDecoration.collapsed(
-                          hintText: 'Mobile Number',
-                        ),
-                      ),
-                    ))
+                          key: _mobileNumberRef,
+                          child: TextFormField(
+                            controller: mobileController,
+                            autofocus: false,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: mobileNumberInputFormatters,
+                            style: Theme
+                                .of(context)
+                                .textTheme
+                                .headline5,
+                            validator: (value) {
+                              if ((value?.length ?? 0) < 10) {
+                                return "Mobile number should be 10 digits";
+                              }
+                            },
+                            decoration: const InputDecoration.collapsed(
+                              hintText: 'Mobile Number',
+                            ),
+                          ),
+                        ))
                   ]))
             ]));
   }
@@ -126,16 +141,17 @@ class _SignState extends State<Sign> {
       if (newValue.text.length > 7) {
         return TextEditingValue(
             selection:
-                TextSelection.collapsed(offset: newValue.text.length + 4),
+            TextSelection.collapsed(offset: newValue.text.length + 4),
             text:
-                "(${newValue.text.substring(0, 3)}) ${newValue.text.substring(3, 7)} ${newValue.text.substring(7)}");
+            "(${newValue.text.substring(0, 3)}) ${newValue.text.substring(
+                3, 7)} ${newValue.text.substring(7)}");
       }
       if (newValue.text.length > 3) {
         return TextEditingValue(
             text:
-                "(${newValue.text.substring(0, 3)}) ${newValue.text.substring(3)}",
+            "(${newValue.text.substring(0, 3)}) ${newValue.text.substring(3)}",
             selection:
-                TextSelection.collapsed(offset: newValue.text.length + 3));
+            TextSelection.collapsed(offset: newValue.text.length + 3));
       }
       return newValue;
     })
@@ -152,10 +168,23 @@ class _SignState extends State<Sign> {
       return;
     }
     String number =
-        mobileController.value.text.replaceAll(RegExp("[^0-9]+"), "");
+    mobileController.value.text.replaceAll(RegExp("[^0-9]+"), "");
     Fluttertoast.showToast(msg: "Processing...");
 
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => Otp(registrationId: number)));
+    register(number).then((reg) {
+      if (reg['existingCustomer'] == true) {
+        Fluttertoast.showToast(
+            msg: "Number Already Exist, Use a different one.");
+      } else {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Otp(registrationId: reg['otpToken'])));
+      }
+    }).catchError((error) {
+      stdout.writeln(error.toString());
+      Fluttertoast.showToast(msg: "Error Processing Request Please try later");
+      return null;
+    });
   }
 }

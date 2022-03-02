@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gullak/components/buttons.dart';
+import 'package:gullak/data/appState.dart';
+import 'package:gullak/external/local/user.dart';
+import 'package:gullak/external/network/api.dart';
+import 'package:provider/provider.dart';
 
 class Otp extends StatefulWidget {
   final String registrationId;
@@ -43,7 +48,7 @@ class _OtpState extends State<Otp> {
                   "Enter OTP",
                   style: Theme.of(context).textTheme.headline4,
                 ),
-                otpForm(),
+                otpForm(context),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -54,13 +59,17 @@ class _OtpState extends State<Otp> {
               ],
             ),
           )),
-          SimpleNavigationButton(onPressed: verify, text: "VERIFY")
+          SimpleNavigationButton(
+              onPressed: () {
+                verify(context);
+              },
+              text: "VERIFY")
         ],
       )),
     );
   }
 
-  Widget otpForm() {
+  Widget otpForm(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 18.0),
       child: Form(
@@ -84,11 +93,33 @@ class _OtpState extends State<Otp> {
     );
   }
 
-  void verify() {
-    if (_otpEditingController.value.text == "123456") {
-      Navigator.of(context).popUntil(ModalRoute.withName("/"));
+  void verify(BuildContext context) {
+    if (_otpEditingController.value.text.isNotEmpty) {
+      stdout.writeln(
+          widget.registrationId + " " + _otpEditingController.value.text);
+      verifyOtp(widget.registrationId, _otpEditingController.value.text)
+          .then((value) {
+        stdout.write(value);
+        if (value == null) {
+          Fluttertoast.showToast(
+              msg: "Authentication Failed, Please try again");
+          Navigator.pop(context);
+        } else {
+          Fluttertoast.showToast(msg: "Success");
+          setUserId(value['userId']).then((value) {
+            stdout.write('done');
+
+            Navigator.of(context).popUntil((route) => false);
+            Navigator.of(context).pushNamed("/");
+            Provider.of<AppState>(context, listen: false).refresh();
+          }).catchError((error) {
+            stdout.write(error.toString());
+            return null;
+          });
+        }
+      }).catchError((error) => null);
     } else {
-      Fluttertoast.showToast(msg: 'Wrong OTP, Please try again');
+      Fluttertoast.showToast(msg: 'OTP is a 6 digit Number, try again');
     }
   }
 }

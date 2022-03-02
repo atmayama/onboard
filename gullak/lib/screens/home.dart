@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:gullak/data/appState.dart';
+import 'package:gullak/data/model/user.dart';
+import 'package:gullak/external/local/user.dart';
+import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key, required this.title}) : super(key: key);
+  final User user;
+
+  const Home({Key? key, required this.title, required this.user})
+      : super(key: key);
 
   final String title;
 
@@ -10,39 +17,29 @@ class Home extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<Home> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text("Gullak"),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        child: Text(
+          "Welcome " + widget.user.id.toString(),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: _logout,
+        child: const Icon(Icons.outbond),
       ),
     );
+  }
+
+  void _logout() {
+    setUserId(null).then((value) {
+      // Navigator.of(context).popUntil((_) => false);
+      // Navigator.of(context).pushNamed("/");
+      Provider.of<AppState>(context, listen: false).refresh();
+    }).catchError((error) => null);
   }
 }

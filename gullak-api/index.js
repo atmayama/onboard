@@ -3,26 +3,53 @@ const express = require("express");
 
 const app = express()
 
+
+
+
+const users = {}, ref = {};
+app.use(express.urlencoded());
 app.use(express.json());
 
+app.use((req, res, next) => {
+    console.log(req.headers, req.method, req.url, req.body, req.query);
+    next();
+});
 
-const users = {
-
-}
 
 app.post("/v1/referral/generateOtp", ({ body: { phoneNumber } }, res) => {
-    if (users[phoneNumber])
+    console.log(phoneNumber);
+    if (ref[phoneNumber])
         res.json({ otpToken: "", existingUser: true })
     else {
-        users[phoneNumber] = { token: cuid() }
-        res.json({ otpToken: users[phoneNumber].token, existingUser: false })
+        const token = cuid();
+        ref[token] = phoneNumber;
+        console.log(token)
+        res.json({ otpToken: token, existingUser: false })
     }
 });
 
 app.post("/v1/referral/verifyOtp", ({ body: { otpToken, otp } }, res) => {
-
-    if (otp === "123456") res.json({ status: "success" })
+    console.log(otpToken, otp)
+    if (otp === "123456") {
+        const userId = cuid();
+        users[userId] = {
+            id: userId,
+            phoneNumber: ref[otpToken],
+            verified: true
+        }
+        console.log(userId);
+        res.json({ status: "success", userId })
+    }
     else res.status(400).send({ error: "invalid otp" });
 });
+
+app.get("/v1/user", ({ query: { id } }, res) => {
+    console.log(id);
+    if (users[id]) {
+        res.json(users[id]);
+    }
+    else res.status(400).send({ error: "invalid otp" });
+});
+
 
 app.listen(8080, () => { console.log("running") });

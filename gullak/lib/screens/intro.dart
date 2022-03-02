@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,33 +13,19 @@ class Intro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<User>(
-      builder: checkAuth,
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: mainContent(context)),
-              SimpleNavigationButton(
-                  onPressed: () => {Navigator.pushNamed(context, "/sign")},
-                  text: "CHECK OUT"),
-            ],
-          ),
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: mainContent(context)),
+            SimpleNavigationButton(
+                onPressed: () => {Navigator.pushNamed(context, "/sign")},
+                text: "CHECK OUT"),
+          ],
         ),
       ),
     );
-  }
-
-  Widget checkAuth(context, user, child) {
-    if ((user.mobile?.isNotEmpty ?? false) && user.verified) {
-      Fluttertoast.showToast(msg: "Logging in as ${user.mobile}");
-      Navigator.pushReplacementNamed(context, "/home");
-    } else {
-      Fluttertoast.showToast(msg: "Welcome");
-      return child ?? Container();
-    }
-    return const Placeholder();
   }
 
   Widget mainContent(context) {

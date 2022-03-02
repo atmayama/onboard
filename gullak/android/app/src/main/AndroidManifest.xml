@@ -2,7 +2,7 @@
     package="money.gullak.gullak.gullak">
    <application
         android:label="gullak"
-        android:name="Gullak"
+        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

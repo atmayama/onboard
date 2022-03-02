@@ -2,7 +2,7 @@ import 'package:gullak/data/model/preference.dart';
 import 'package:localstore/localstore.dart';
 
 class User {
-  int? id;
+  String? id;
   bool verified = false;
   String? mobile;
 
